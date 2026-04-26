@@ -3,10 +3,7 @@ A tic-tac-toe AI program that never loses. This program uses the minimax algorit
 
 ## 🤖 AI-Powered Game with Minimax (without Alpha-Beta Pruning)
 
-### 🎓 Internship Project | Game AI & Search Algorithms
-
----
-
+### 🎓 Internship Project | Game AI & Search Algorithm
 ## ✨ **Features**
 
 ## 🚀 **How to Run**
@@ -23,14 +20,6 @@ A tic-tac-toe AI program that never loses. This program uses the minimax algorit
 - Draw: Board full, no winner
 
 ## ** Win Rate vs Human: 100% win/draw **
-## Browser Support: Chrome, Firefox, Safari, Mobile
 
-
-# Code Architecture
-TicTacToe Class
-├── board: string[9]     // Game state
-├── scores: {player, ai, draws}
-├── minimax(depth, alpha, beta)  // AI Brain
-├── getBestMove()        // AI decision
-├── checkWinner()        // 8 win patterns
-└── updateDisplay()      // UI refresh 
+## Browser Support 
+Chrome, Firefox, Safari, Mobile
