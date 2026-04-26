@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            cursor: none;
+        }
+
+        .custom-cursor {
+            position: fixed;
+            width: 25px;
+            height: 25px;
+            background: #007bff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0,123,255,0.5);
+        }
+
+        .game-container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .score {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-width: 100px;
+        }
+
+        .score strong {
+            display: block;
+            font-size: 24px;
+            color: #007bff;
+        }
+
+        .status {
+            font-size: 20px;
+            margin: 20px 0;
+            min-height: 30px;
+            color: #333;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 5px;
+            margin: 20px auto;
+            background: #333;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .cell {
+            background: white;
+            border: none;
+            font-size: 48px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .cell:hover {
+            background: #e9ecef;
+        }
+
+        .cell.x {
+            color: #007bff;
+        }
+
+        .cell.o {
+            color: #dc3545;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        @media (max-width: 500px) {
+            .board {
+                grid-template-columns: repeat(3, 90px);
+                grid-template-rows: repeat(3, 90px);
+            }
+            .cell {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor" id="cursor">X</div>
+
+    <div class="game-container">
+        <h1>Tic-Tac-Toe</h1>
+        
+        <div class="score-board">
+            <div class="score">
+                <div>You (X)</div>
+                <strong id="playerScore">0</strong>
+            </div>
+            <div class="score">
+                <div>AI (O)</div>
+                <strong id="aiScore">0</strong>
+            </div>
+            <div class="score">
+                <div>Draws</div>
+                <strong id="drawScore">0</strong>
+            </div>
+        </div>
+
+        <div class="status" id="status">Your turn! Click to play.</div>
+        
+        <div class="board" id="board">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+        
+        <button class="btn" onclick="game.resetGame()">New Game</button>
+    </div>
+
+    <script>
+        class TicTacToe {
+            constructor() {
+                this.board = ['', '', '', '', '', '', '', '', ''];
+                this.currentPlayer = 'X'; // Player (X) starts
+                this.gameActive = true;
+                this.scores = { player: 0, ai: 0, draws: 0 };
+                this.init();
+            }
+
+            init() {
+                this.updateDisplay();
+                this.updateCursor();
+                this.updateStatus();
+            }
+
+            updateCursor() {
+                document.addEventListener('mousemove', (e) => {
+                    const cursor = document.getElementById('cursor');
+                    cursor.style.left = (e.clientX - 12.5) + 'px';
+                    cursor.style.top = (e.clientY - 12.5) + 'px';
+
+                    const cells = document.querySelectorAll('.cell');
+                    let hoveringValidCell = false;
+                    cells.forEach(cell => {
+                        const rect = cell.getBoundingClientRect();
+                        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                            e.clientY >= rect.top && e.clientY <= rect.bottom &&
+                            cell.textContent === '' && this.currentPlayer === 'X' && this.gameActive) {
+                            hoveringValidCell = true;
+                        }
+                    });
+
+                    cursor.textContent = hoveringValidCell ? 'X' : '+';
+                    cursor.style.background = hoveringValidCell ? '#007bff' : '#6c757d';
+                });
+            }
+
+            makeMove(index) {
+                if (this.board[index] !== '' || this.currentPlayer !== 'X' || !this.gameActive) return;
+
+                // Player move (X)
+                this.board[index] = 'X';
+                this.currentPlayer = 'O';
+                this.updateDisplay();
+                
+                // Check if player won
+                if (this.checkWinner('X')) {
+                    this.endGame('player');
+                    return;
+                }
+
+                // Check if draw
+                if (this.isBoardFull()) {
+                    this.endGame('draw');
+                    return;
+                }
+
+                this.updateStatus();
+                // AI turn
+                setTimeout(() => this.aiMove(), 300);
+            }
+
+            aiMove() {
+                const bestMove = this.getBestMove();
+                if (bestMove !== null) {
+                    // AI move (O)
+                    this.board[bestMove] = 'O';
+                    this.currentPlayer = 'X';
+                    this.updateDisplay();
+                    
+                    // Check if AI won
+                    if (this.checkWinner('O')) {
+                        this.endGame('ai');
+                        return;
+                    }
+
+                    // Check if draw
+                    if (this.isBoardFull()) {
+                        this.endGame('draw');
+                        return;
+                    }
+
+                    this.updateStatus();
+                }
+            }
+
+            getBestMove() {
+                let bestScore = -Infinity;
+                let bestMove = null;
+                for (let i = 0; i < 9; i++) {
+                    if (this.board[i] === '') {
+                        this.board[i] = 'O';
+                        let score = this.minimax(0, false);
+                        this.board[i] = '';
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = i;
+                        }
+                    }
+                }
+                return bestMove;
+            }
+
+            minimax(depth, isMaximizing) {
+                const winner = this.checkWinnerResult();
+                if (winner === 'O') return 10 - depth;
+                if (winner === 'X') return depth - 10;
+                if (this.isBoardFull()) return 0;
+
+                if (isMaximizing) {
+                    let best = -Infinity;
+                    for (let i = 0; i < 9; i++) {
+                        if (this.board[i] === '') {
+                            this.board[i] = 'O';
+                            best = Math.max(best, this.minimax(depth + 1, false));
+                            this.board[i] = '';
+                        }
+                    }
+                    return best;
+                } else {
+                    let best = Infinity;
+                    for (let i = 0; i < 9; i++) {
+                        if (this.board[i] === '') {
+                            this.board[i] = 'X';
+                            best = Math.min(best, this.minimax(depth + 1, true));
+                            this.board[i] = '';
+                        }
+                    }
+                    return best;
+                }
+            }
+
+            checkWinner(player) {
+                const wins = [
+                    [0,1,2], [3,4,5], [6,7,8], // rows
+                    [0,3,6], [1,4,7], [2,5,8], // cols
+                    [0,4,8], [2,4,6] // diags
+                ];
+                return wins.some(combo => {
+                    return this.board[combo[0]] === player &&
+                           this.board[combo[1]] === player &&
+                           this.board[combo[2]] === player;
+                });
+            }
+
+            checkWinnerResult() {
+                const wins = [
+                    [0,1,2], [3,4,5], [6,7,8],
+                    [0,3,6], [1,4,7], [2,5,8],
+                    [0,4,8], [2,4,6]
+                ];
+                for (let combo of wins) {
+                    if (this.board[combo[0]] !== '' &&
+                        this.board[combo[0]] === this.board[combo[1]] &&
+                        this.board[combo[1]] === this.board[combo[2]]) {
+                        return this.board[combo[0]];
+                    }
+                }
+                return null;
+            }
+
+            isBoardFull() {
+                return this.board.every(cell => cell !== '');
+            }
+
+            endGame(result) {
+                this.gameActive = false;
+                const status = document.getElementById('status');
+                
+                switch(result) {
+                    case 'player':
+                        status.textContent = "You Win! 🎉";
+                        this.scores.player++;
+                        break;
+                    case 'ai':
+                        status.textContent = "AI Wins! 🤖";
+                        this.scores.ai++;
+                        break;
+                    case 'draw':
+                        status.textContent = "It's a Draw!";
+                        this.scores.draws++;
+                        break;
+                }
+                this.updateScores();
+            }
+
+            updateDisplay() {
+                document.querySelectorAll('.cell').forEach((cell, index) => {
+                    cell.textContent = this.board[index];
+                    cell.className = 'cell ' + 
+                        (this.board[index] === 'X' ? 'x' : 
+                         this.board[index] === 'O' ? 'o' : '');
+                });
+            }
+
+            updateStatus() {
+                if (this.gameActive) {
+                    document.getElementById('status').textContent = 
+                        this.currentPlayer === 'X' ? 'Your turn!' : 'AI thinking...';
+                }
+            }
+
+            updateScores() {
+                document.getElementById('playerScore').textContent = this.scores.player;
+                document.getElementById('aiScore').textContent = this.scores.ai;
+                document.getElementById('drawScore').textContent = this.scores.draws;
+            }
+
+            resetGame() {
+                this.board = ['', '', '', '', '', '', '', '', ''];
+                this.currentPlayer = 'X';
+                this.gameActive = true;
+                document.getElementById('status').textContent = 'Your turn! Click to play.';
+                this.updateDisplay();
+                this.updateScores();
+            }
+        }
+
+        // Global game instance
+        const game = new TicTacToe();
+
+        // Add click handlers to cells
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', () => {
+                game.makeMove(parseInt(cell.dataset.index));
+            });
+        });
+    </script>
+</body>
+</html>
